@@ -76,7 +76,7 @@ class SessionStore(SessionBase):
         "Returns the given session dictionary pickled and encoded as a string."
         session_obj = {}
         try:
-            session_obj['user'] = {'user_id': session_dict['user'].id, 'username':session_dict['user'].username}
+            session_obj['user'] = {'user_id': session_dict['_auth_user_id'], 'username':session_dict['yubidjango_user'].user.username}
         except:
             pass
         pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
