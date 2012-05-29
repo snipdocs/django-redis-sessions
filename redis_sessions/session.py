@@ -1,8 +1,11 @@
-import redis
+import redis, base64
+from django.utils import simplejson as json
+from django.core.exceptions import SuspiciousOperation
+from django.utils.hashcompat import md5_constructor
 from django.utils.encoding import force_unicode
 from django.contrib.sessions.backends.base import SessionBase, CreateError
 from django.conf import settings
-
+from django.utils.crypto import constant_time_compare
 
 class SessionStore(SessionBase):
     """
@@ -31,7 +34,7 @@ class SessionStore(SessionBase):
     def create(self):
         while True:
             self._session_key = self._get_new_session_key()
-            
+
             try:
                 self.save(must_create=True)
             except CreateError:
@@ -64,3 +67,21 @@ class SessionStore(SessionBase):
         if not prefix:
             return session_key
         return ':'.join([prefix, session_key])
+
+        def encode(self, session_dict):
+        "Returns the given session dictionary pickled and encoded as a string."
+        session_obj = {}
+        session_obj['user'] = {'user_id': session_dict['user'].id, 'username':session_dict['user'].username}
+        pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
+        session_obj['pickled'] = base64.encodestring(pickled)
+        session_obj['hash'] = base64.encodestring(self._hash(pickled))
+        return json.dumps(session_obj)
+
+    def decode(self, session_data):
+        session = json.loads(session_data)
+        pickled = base64.decodestring(session['pickled'])
+        expected_hash = self._hash(pickled)
+        if not constant_time_compare(base64.decodestring(session['hash']), expected_hash):
+            raise SuspiciousOperation("Session data corrupted")
+        else:
+            return pickle.loads(pickled)
