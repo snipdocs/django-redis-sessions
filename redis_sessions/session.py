@@ -68,7 +68,7 @@ class SessionStore(SessionBase):
             return session_key
         return ':'.join([prefix, session_key])
 
-        def encode(self, session_dict):
+    def encode(self, session_dict):
         "Returns the given session dictionary pickled and encoded as a string."
         session_obj = {}
         session_obj['user'] = {'user_id': session_dict['user'].id, 'username':session_dict['user'].username}
