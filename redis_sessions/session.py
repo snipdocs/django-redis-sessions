@@ -6,6 +6,10 @@ from django.utils.encoding import force_unicode
 from django.contrib.sessions.backends.base import SessionBase, CreateError
 from django.conf import settings
 from django.utils.crypto import constant_time_compare
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 class SessionStore(SessionBase):
     """
@@ -71,7 +75,10 @@ class SessionStore(SessionBase):
     def encode(self, session_dict):
         "Returns the given session dictionary pickled and encoded as a string."
         session_obj = {}
-        session_obj['user'] = {'user_id': session_dict['user'].id, 'username':session_dict['user'].username}
+        try:
+            session_obj['user'] = {'user_id': session_dict['user'].id, 'username':session_dict['user'].username}
+        except:
+            pass
         pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
         session_obj['pickled'] = base64.encodestring(pickled)
         session_obj['hash'] = base64.encodestring(self._hash(pickled))
