@@ -85,6 +85,7 @@ class SessionStore(SessionBase):
                 username = session_dict['yubidjango_user'].user.username
                 userIdHash = False
             session_obj['user'] = {'user_id': session_dict['_auth_user_id'], 'username':username, 'userIdHash': userIdHash, 'guideDashboard': guideDashboard, 'guideApp': guideApp}
+            del session_dict['userProfile']
         except:
             pass
         pickled = pickle.dumps(session_dict, pickle.HIGHEST_PROTOCOL)
